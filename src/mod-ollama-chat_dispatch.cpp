@@ -1,4 +1,5 @@
 #include "mod-ollama-chat_dispatch.h"
+#include "mod-ollama-chat_transcript.h"
 #include "mod-ollama-chat_api.h"
 #include "mod-ollama-chat_config.h"
 #include "mod-ollama-chat_expression.h"
@@ -379,6 +380,16 @@ namespace
         }
 
         Governor_RecordUtterance(botGuid, c.request.scopeKey, c.text);
+
+        // Record what this bot just said. ProcessChat records it again when
+        // ProcessBotChatMessage feeds it back, and Transcript_Note drops the
+        // duplicate; recording here is what guarantees the line lands even
+        // when that feedback never happens (ambient chatter, emote reactions,
+        // or a chain that has run out of depth).
+        Transcript_Note(c.request.scopeKey, c.request.source,
+                        bot->GetName(), c.text,
+                        bot->GetMapId(), bot->GetPositionX(),
+                        bot->GetPositionY());
         ++g_totalDelivered;
 
         // This bot is now in a conversation with whoever it just answered, so

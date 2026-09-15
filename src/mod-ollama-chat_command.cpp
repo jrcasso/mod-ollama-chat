@@ -1,5 +1,6 @@
 #include "mod-ollama-chat_command.h"
 #include "mod-ollama-chat_config.h"
+#include "mod-ollama-chat_transcript.h"
 #include "mod-ollama-chat_sentiment.h"
 #include "mod-ollama-chat_personality.h"
 #include "mod-ollama-chat_api.h"
@@ -491,6 +492,15 @@ bool OllamaChatConfigCommand::HandleOllamaStatusCommand(ChatHandler* handler)
     handler->PSendSysMessage("Blocked: {} cooldown, {} rate, {} repetition, {} chain-depth, {} no-audience",
                              gov.blockedCooldown, gov.blockedRate, gov.blockedRepetition,
                              gov.blockedChainDepth, gov.blockedNoAudience);
+
+    if (g_EnableRoomHistory)
+        handler->PSendSysMessage("Room transcript: {} rooms, {} lines (cap {} lines / {}s / {} rooms)",
+                                 (unsigned long long)Transcript_RoomCount(),
+                                 (unsigned long long)Transcript_LineCount(),
+                                 g_RoomHistoryMaxLines, g_RoomHistoryMaxAgeSeconds,
+                                 g_RoomHistoryMaxRooms);
+    else
+        handler->PSendSysMessage("Room transcript: off (pairwise history only)");
 
     handler->PSendSysMessage("Roleplay: {} (strictness {})   Emote reactions: {}",
                              g_RoleplayEnable ? "on" : "off",

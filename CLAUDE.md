@@ -110,6 +110,33 @@ When adding prompt material, prefer things outside the bot — people nearby,
 what just happened, where they are — over facts about the bot itself. The
 weights in `OllamaChat.Topic.*` encode this deliberately.
 
+## Two conversation memories, and which one to touch
+
+There are two, and they answer different questions:
+
+- **Pairwise history** (`g_BotConversationHistory`, handler.cpp) -- what bot X
+  and player Y have said *to each other*. Persisted to
+  `mod_ollama_chat_history`, trimmed per pair, and the input to the memory and
+  relationship systems. This is long-term continuity.
+- **Room transcript** (`mod-ollama-chat_transcript.{h,cpp}`) -- what was said
+  *in a room*, in order, by everyone in it. In-memory only, bounded by lines,
+  age and room count. This is the conversational thread.
+
+The prompt gets the room transcript when it has anything to show and falls back
+to the pairwise block otherwise. They are deliberately not concatenated: in a
+two-person exchange they are nearly the same lines, and a model shown the same
+line twice learns to repeat it.
+
+Two traps if you extend this:
+
+- **Do not key anything on a whisper scope key.** It is `Whisper#z<zone>`,
+  shared by every private conversation in the zone. The transcript excludes
+  whisper for exactly this reason.
+- **Say and yell scope keys are per zone, not per earshot.** Anything that
+  shows say/yell content to a bot must filter by distance, as
+  `Transcript_BuildPrompt` does, or bots answer conversations held across the
+  zone from them.
+
 ## Conventions
 
 - Log to `module.ollamachat`, not `server.loading`. It falls back to the

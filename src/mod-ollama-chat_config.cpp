@@ -250,6 +250,15 @@ std::string g_ChatHistoryHeaderTemplate;
 std::string g_ChatHistoryLineTemplate;
 std::string g_ChatHistoryFooterTemplate;
 
+bool        g_EnableRoomHistory        = true;
+bool        g_RecordBotToBotHistory    = true;
+uint32_t    g_RoomHistoryMaxLines      = 8;
+uint32_t    g_RoomHistoryMaxAgeSeconds = 600;
+uint32_t    g_RoomHistoryMaxRooms      = 200;
+uint32_t    g_RoomHistoryMaxChars      = 900;
+std::string g_RoomHistoryHeaderTemplate;
+std::string g_RoomHistoryLineTemplate;
+
 // --------------------------------------------
 // Chatbot Snapshot Template
 // --------------------------------------------
@@ -601,6 +610,19 @@ void LoadOllamaChatConfig()
     g_ChatHistoryHeaderTemplate       = sConfigMgr->GetOption<std::string>("OllamaChat.ChatHistoryHeaderTemplate", "");
     g_ChatHistoryLineTemplate         = sConfigMgr->GetOption<std::string>("OllamaChat.ChatHistoryLineTemplate", "");
     g_ChatHistoryFooterTemplate       = sConfigMgr->GetOption<std::string>("OllamaChat.ChatHistoryFooterTemplate", "");
+
+    // Defaults live here, not only in the .dist. An existing realm's conf is a
+    // copy of an older .dist and will not have these keys at all.
+    g_EnableRoomHistory               = sConfigMgr->GetOption<bool>("OllamaChat.EnableRoomHistory", true);
+    g_RecordBotToBotHistory           = sConfigMgr->GetOption<bool>("OllamaChat.RecordBotToBotHistory", true);
+    g_RoomHistoryMaxLines             = sConfigMgr->GetOption<uint32_t>("OllamaChat.RoomHistory.MaxLines", 8);
+    g_RoomHistoryMaxAgeSeconds        = sConfigMgr->GetOption<uint32_t>("OllamaChat.RoomHistory.MaxAgeSeconds", 600);
+    g_RoomHistoryMaxRooms             = sConfigMgr->GetOption<uint32_t>("OllamaChat.RoomHistory.MaxRooms", 200);
+    g_RoomHistoryMaxChars             = sConfigMgr->GetOption<uint32_t>("OllamaChat.RoomHistory.MaxChars", 900);
+    g_RoomHistoryHeaderTemplate       = sConfigMgr->GetOption<std::string>("OllamaChat.RoomHistoryHeaderTemplate",
+        "Recent conversation here, oldest first. Context only -- do not repeat it, and do not answer lines already answered.\n");
+    g_RoomHistoryLineTemplate         = sConfigMgr->GetOption<std::string>("OllamaChat.RoomHistoryLineTemplate",
+        "{speaker}: {text}\n");
 
     g_EnableChatBotSnapshotTemplate   = sConfigMgr->GetOption<bool>("OllamaChat.EnableChatBotSnapshotTemplate", false);
     g_ChatBotSnapshotTemplate         = sConfigMgr->GetOption<std::string>("OllamaChat.ChatBotSnapshotTemplate", "");

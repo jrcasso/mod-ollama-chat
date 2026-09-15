@@ -118,6 +118,16 @@ extern std::string g_ChatHistoryHeaderTemplate;
 extern std::string g_ChatHistoryLineTemplate;
 extern std::string g_ChatHistoryFooterTemplate;
 
+// Room transcript -- see mod-ollama-chat_transcript.h.
+extern bool        g_EnableRoomHistory;
+extern bool        g_RecordBotToBotHistory;
+extern uint32_t    g_RoomHistoryMaxLines;
+extern uint32_t    g_RoomHistoryMaxAgeSeconds;
+extern uint32_t    g_RoomHistoryMaxRooms;
+extern uint32_t    g_RoomHistoryMaxChars;
+extern std::string g_RoomHistoryHeaderTemplate;
+extern std::string g_RoomHistoryLineTemplate;
+
 // --------------------------------------------
 // Chatbot Snapshot Template
 // --------------------------------------------

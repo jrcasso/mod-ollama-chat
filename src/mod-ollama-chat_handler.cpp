@@ -27,6 +27,7 @@
 #include <ctime>
 #include "DatabaseEnv.h"
 #include "mod-ollama-chat_handler.h"
+#include "mod-ollama-chat_transcript.h"
 #include "mod-ollama-chat_api.h"
 #include "mod-ollama-chat_personality.h"
 #include "mod-ollama-chat_config.h"
@@ -1198,6 +1199,18 @@ void PlayerBotChatHandler::ProcessChat(Player* player, uint32_t /*type*/, uint32
             ? player->GetGuildId() : 0,
         scopeGroupOrZone);
 
+    // Record the line in the room transcript before any of the decisions
+    // below. A bot that does not reply, or is suppressed by the governor,
+    // still needs to have heard this -- that is the whole point of a thread.
+    //
+    // This is the one choke point every message passes through, bot or player:
+    // a delivered bot line is fed back in here by ProcessBotChatMessage. The
+    // only bot lines that do not arrive here are the ones that never re-enter
+    // (ambient chatter, whispers), and the dispatcher records those itself.
+    Transcript_Note(scopeKey, sourceLocal, player->GetName(), msg,
+                    player->GetMapId(), player->GetPositionX(),
+                    player->GetPositionY());
+
     if (!senderIsBot)
     {
         // A real player spoke here. This timestamp is what lets bots keep
@@ -1741,7 +1754,7 @@ void PlayerBotChatHandler::ProcessChat(Player* player, uint32_t /*type*/, uint32
             continue;
         }
 
-        std::string prompt = GenerateBotPrompt(bot, msg, player);
+        std::string prompt = GenerateBotPrompt(bot, msg, player, scopeKey, sourceLocal);
         if (prompt.empty())
             continue;
 
@@ -1761,7 +1774,10 @@ void PlayerBotChatHandler::ProcessChat(Player* player, uint32_t /*type*/, uint32
                            ? OllamaRequestKind::RoleplayReply
                            : OllamaRequestKind::ChatReply;
         request.triggerBotReplies = (sourceLocal != SRC_WHISPER_LOCAL);
-        request.recordHistory     = !senderIsBot;
+        // Bot-to-bot exchanges used to be dropped here, which left bots with
+        // no lasting memory of each other at all. The room transcript gives
+        // them the thread; this gives them the relationship.
+        request.recordHistory     = !senderIsBot || g_RecordBotToBotHistory;
         request.updateSentiment   = !senderIsBot && g_EnableSentimentTracking;
 
         if (!OllamaDispatch_Submit(std::move(request)) && g_DebugEnabled)
@@ -1900,7 +1916,9 @@ static bool IsBotEligibleForChatChannelLocal(Player* bot, Player* player, ChatCh
     }
 }
 
-std::string GenerateBotPrompt(Player* bot, std::string playerMessage, Player* player)
+std::string GenerateBotPrompt(Player* bot, std::string playerMessage, Player* player,
+                              const std::string& scopeKey,
+                              ChatChannelSourceLocal sourceLocal)
 {  
     if (!bot || !player) {
         return "";
@@ -1954,7 +1972,19 @@ std::string GenerateBotPrompt(Player* bot, std::string playerMessage, Player* pl
     uint32_t playerGold             = player->GetMoney() / 10000;
     float playerDistance            = player->IsInWorld() && bot->IsInWorld() ? player->GetDistance(bot) : -1.0f;
 
-    std::string chatHistory         = GetBotHistoryPrompt(botGuid, playerGuid, playerMessage);
+    // The room transcript is what lets a bot follow a conversation it is only
+    // part of. It supersedes the pairwise block rather than joining it: for a
+    // two-person exchange the two would be near-identical, and repeating the
+    // same lines twice in one prompt is how you teach a model to echo them.
+    //
+    // The pairwise store is untouched and still feeds DB persistence and
+    // Memory_*; long-term continuity comes from there, not from this window.
+    std::string chatHistory = Transcript_BuildPrompt(bot, scopeKey, sourceLocal,
+                                                     playerName, playerMessage);
+
+    if (chatHistory.empty())
+        chatHistory = GetBotHistoryPrompt(botGuid, playerGuid, playerMessage);
+
     std::string sentimentInfo       = GetSentimentPromptAddition(bot, player);
 
     // Retrieve RAG information if enabled

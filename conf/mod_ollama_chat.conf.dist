@@ -423,6 +423,76 @@ OllamaChat.DefaultPersonalityPrompt = "Speak like a real WoW player. Stay in cha
 #     Default:     1 (true)
 OllamaChat.EnableChatHistory = 1
 
+# --------------------------------------------
+# ROOM TRANSCRIPT (conversation thread)
+# --------------------------------------------
+#
+# EnableChatHistory above is PAIRWISE: bot X's exchanges with player Y. It
+# cannot show a bot what anyone else in the channel said, and bot-to-bot lines
+# were never recorded at all, so a bot could not follow a conversation it was
+# only part of.
+#
+# The room transcript records what was said in a conversation space, in order,
+# by everyone in it, keyed the same way the governor keys cooldowns. When it
+# has anything to show it replaces the pairwise block in the prompt; the
+# pairwise store still runs underneath and still feeds the DB and the memory
+# system. Whisper is excluded deliberately -- whisper scope keys are shared by
+# every private conversation in a zone.
+
+# OllamaChat.EnableRoomHistory
+#     Description: Show each bot the recent conversation in the room it is
+#                  answering in, instead of only its own exchanges with one
+#                  player. Set to 0 to fall back to the pairwise block.
+#     Default:     1 (true)
+OllamaChat.EnableRoomHistory = 1
+
+# OllamaChat.RecordBotToBotHistory
+#     Description: Also write bot-to-bot exchanges into the pairwise history
+#                  and the memory system, so bots build lasting memories of
+#                  each other rather than only of players. Costs DB rows: the
+#                  table is trimmed to MaxConversationHistory rows per pair,
+#                  and bot-to-bot creates far more pairs than bot-to-player.
+#                  Set to 0 to keep bot-to-bot in the room transcript only.
+#     Default:     1 (true)
+OllamaChat.RecordBotToBotHistory = 1
+
+# OllamaChat.RoomHistory.MaxLines
+#     Description: Lines kept per room. Every one of them goes into the prompt,
+#                  so this is an inference-latency setting as much as a memory
+#                  one.
+#     Default:     8
+OllamaChat.RoomHistory.MaxLines = 8
+
+# OllamaChat.RoomHistory.MaxAgeSeconds
+#     Description: Lines older than this are neither shown nor kept. Stops a
+#                  bot answering a conversation that ended an hour ago.
+#     Default:     600
+OllamaChat.RoomHistory.MaxAgeSeconds = 600
+
+# OllamaChat.RoomHistory.MaxRooms
+#     Description: Hard ceiling on tracked rooms, least-recently-used evicted.
+#                  Party scope keys embed a group counter that only rises, so
+#                  without this the map would grow for the life of the realm.
+#     Default:     200
+OllamaChat.RoomHistory.MaxRooms = 200
+
+# OllamaChat.RoomHistory.MaxChars
+#     Description: Character budget for the block in the prompt. Oldest lines
+#                  are dropped first. A busy General channel would otherwise
+#                  inflate every prompt on the realm.
+#     Default:     900
+OllamaChat.RoomHistory.MaxChars = 900
+
+# OllamaChat.RoomHistoryHeaderTemplate
+#     Description: Header above the transcript.
+#     Placeholders (named): {bot_name}
+OllamaChat.RoomHistoryHeaderTemplate = "Recent conversation here, oldest first. Context only -- do not repeat it, and do not answer lines already answered.\n"
+
+# OllamaChat.RoomHistoryLineTemplate
+#     Description: One transcript line. The bot's own lines render as "You".
+#     Placeholders (named): {speaker} {text}
+OllamaChat.RoomHistoryLineTemplate = "{speaker}: {text}\n"
+
 # OllamaChat.MaxConversationHistory
 #     Description: The maximum number of recent message pairs (player + bot reply) to track per bot/player combination.
 #                  This history is stored in memory and included in the LLM prompt when the same player talks to the bot again.
