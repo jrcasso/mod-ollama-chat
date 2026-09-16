@@ -92,13 +92,16 @@ namespace
     }
 
     // Recorded only when a real person is on one end of it.
-    bool IsRealPlayer(Player* p)
+    //
+    // Named apart from mod-playerbots' global IsRealPlayer(Player*) in
+    // PlayerbotAI.h, which this collided with.
+    bool TelemetryIsRealPlayer(Player* p)
     {
         return p && !GET_PLAYERBOT_AI(p);
     }
 }
 
-void Telemetry_Start()
+void ChatTelemetry_Start()
 {
     if (!g_EnableChatTelemetry || g_running)
         return;
@@ -138,7 +141,7 @@ void Telemetry_Start()
     LOG_INFO("server.loading", "[Ollama Chat] telemetry -> {}", path);
 }
 
-void Telemetry_Stop()
+void ChatTelemetry_Stop()
 {
     if (!g_running)
         return;
@@ -155,12 +158,12 @@ void Telemetry_Stop()
         g_writer.join();
 }
 
-bool Telemetry_Enabled()
+bool ChatTelemetry_Enabled()
 {
     return g_EnableChatTelemetry && g_running;
 }
 
-uint64_t Telemetry_NoteIncoming(Player* bot, Player* speaker,
+uint64_t ChatTelemetry_NoteIncoming(Player* bot, Player* speaker,
                                 std::string const& text, char const* source,
                                 std::string const& scopeKey)
 {
@@ -168,7 +171,7 @@ uint64_t Telemetry_NoteIncoming(Player* bot, Player* speaker,
         return 0;
 
     // Bot-to-bot chatter is most of the traffic and none of the interest.
-    if (!IsRealPlayer(speaker))
+    if (!TelemetryIsRealPlayer(speaker))
         return 0;
 
     uint64_t const turn = g_nextTurn++;
@@ -189,7 +192,7 @@ uint64_t Telemetry_NoteIncoming(Player* bot, Player* speaker,
     return turn;
 }
 
-void Telemetry_NoteReply(uint64_t turn, std::string const& botName,
+void ChatTelemetry_NoteReply(uint64_t turn, std::string const& botName,
                          std::string const& text, std::string const& intent,
                          uint32_t emoteId, int64_t latencyMs, size_t promptChars)
 {
@@ -208,7 +211,7 @@ void Telemetry_NoteReply(uint64_t turn, std::string const& botName,
     });
 }
 
-void Telemetry_NoteIntent(Player* bot, Player* speaker,
+void ChatTelemetry_NoteIntent(Player* bot, Player* speaker,
                           std::string const& command, bool executed,
                           char const* refusedBecause)
 {

@@ -384,7 +384,7 @@ namespace
             return;
         }
 
-        Telemetry_NoteReply(c.request.telemetryTurn, c.request.botName, c.text,
+        ChatTelemetry_NoteReply(c.request.telemetryTurn, c.request.botName, c.text,
                             c.intent, c.emoteId,
                             std::chrono::duration_cast<std::chrono::milliseconds>(
                                 std::chrono::system_clock::now().time_since_epoch()).count()

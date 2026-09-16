@@ -1783,7 +1783,7 @@ void PlayerBotChatHandler::ProcessChat(Player* player, uint32_t /*type*/, uint32
 
         // Opens the conversation turn. Returns 0 for bot-to-bot, which is most
         // of the traffic and none of what anyone wants to replay.
-        request.telemetryTurn = Telemetry_NoteIncoming(bot, player, trimmedMsg,
+        request.telemetryTurn = ChatTelemetry_NoteIncoming(bot, player, trimmedMsg,
                                                        ChatChannelSourceLocalStr[sourceLocal],
                                                        scopeKey);
         request.submittedAtMs = std::chrono::duration_cast<std::chrono::milliseconds>(

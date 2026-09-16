@@ -21,23 +21,23 @@ class Player;
 // Same two rules as the other writer: the world thread never touches the disk,
 // and a full queue drops events rather than stalling the server.
 
-void Telemetry_Start();
-void Telemetry_Stop();
-bool Telemetry_Enabled();
+void ChatTelemetry_Start();
+void ChatTelemetry_Stop();
+bool ChatTelemetry_Enabled();
 
 // A message arrived. Returns a correlation id to pass to the events it causes,
 // or 0 when this conversation is not being recorded.
-uint64_t Telemetry_NoteIncoming(Player* bot, Player* speaker,
+uint64_t ChatTelemetry_NoteIncoming(Player* bot, Player* speaker,
                                 std::string const& text, char const* source,
                                 std::string const& scopeKey);
 
 // The bot answered. `intent` is the command the reply asked for, or "".
-void Telemetry_NoteReply(uint64_t turn, std::string const& botName,
+void ChatTelemetry_NoteReply(uint64_t turn, std::string const& botName,
                          std::string const& text, std::string const& intent,
                          uint32_t emoteId, int64_t latencyMs, size_t promptChars);
 
 // An intent reached the command layer, or was refused before it got there.
-void Telemetry_NoteIntent(Player* bot, Player* speaker,
+void ChatTelemetry_NoteIntent(Player* bot, Player* speaker,
                           std::string const& command, bool executed,
                           char const* refusedBecause);
 

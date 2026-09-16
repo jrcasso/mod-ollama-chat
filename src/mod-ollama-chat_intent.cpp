@@ -186,7 +186,7 @@ void Intent_Execute(Player* bot, Player* speaker, std::string const& command)
 
     if (OnCooldown(bot, command))
     {
-        Telemetry_NoteIntent(bot, speaker, command, false, "cooldown");
+        ChatTelemetry_NoteIntent(bot, speaker, command, false, "cooldown");
 
         if (g_DebugEnabled)
             LOG_INFO("module.ollamachat",
@@ -210,7 +210,7 @@ void Intent_Execute(Player* bot, Player* speaker, std::string const& command)
     // applies its own security check and may still refuse. The bot-buddy
     // outcome events and the bot's own refusal message cover what happened
     // next; this records that the intent got that far.
-    Telemetry_NoteIntent(bot, speaker, command, true, nullptr);
+    ChatTelemetry_NoteIntent(bot, speaker, command, true, nullptr);
 
     if (g_DebugEnabled)
         LOG_INFO("module.ollamachat", "[Ollama Chat] {} acting on '{}' from {}",

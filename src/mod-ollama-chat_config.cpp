@@ -1162,7 +1162,7 @@ void OllamaChatConfigWorldScript::OnStartup()
     LoadOllamaChatConfig();
 
     // After the config, so the writer knows where to put the file.
-    Telemetry_Start();
+    ChatTelemetry_Start();
 
     LoadBotPersonalityList();
     LoadBotConversationHistoryFromDB();
@@ -1211,7 +1211,7 @@ void OllamaChatConfigWorldScript::OnShutdown()
 
     // After the dispatcher, so replies still in flight are recorded before the
     // file closes.
-    Telemetry_Stop();
+    ChatTelemetry_Stop();
 
     SaveBotConversationHistoryToDB();
     Memory_SaveAll();
