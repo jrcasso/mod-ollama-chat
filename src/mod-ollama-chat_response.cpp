@@ -1,4 +1,5 @@
 #include "mod-ollama-chat_response.h"
+#include "mod-ollama-chat_intent.h"
 #include "mod-ollama-chat_config.h"
 #include "mod-ollama-chat_expression.h"
 
@@ -372,10 +373,13 @@ std::string ClampReplyLength(const std::string& text, uint32_t maxLen)
 
 std::string ProcessLlmResponse(const std::string& raw,
                                const std::string& botName,
-                               uint32_t* outEmoteId)
+                               uint32_t* outEmoteId,
+                               std::string* outIntent)
 {
     if (outEmoteId)
         *outEmoteId = 0;
+    if (outIntent)
+        outIntent->clear();
 
     if (raw.empty())
         return "";
@@ -395,6 +399,14 @@ std::string ProcessLlmResponse(const std::string& raw,
         uint32_t emote = ExtractEmoteTag(s);
         if (outEmoteId)
             *outEmoteId = emote;
+    }
+
+    // Same place and the same reason as the emote tag: before StripMarkdown,
+    // so the tag is gone from the line whether or not it was understood.
+    {
+        std::string intent = Intent_Extract(s);
+        if (outIntent)
+            *outIntent = intent;
     }
 
     if (g_ResponseStripMarkdown)

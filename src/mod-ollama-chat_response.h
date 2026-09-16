@@ -49,8 +49,12 @@ std::string ClampReplyLength(const std::string& text, uint32_t maxLen);
 // outEmoteId, when non-null, receives the TEXT_EMOTE_* id parsed from an
 // "[emote:name]" tag (0 when absent or unknown); the tag is removed from the
 // text either way.
+// outIntent, when non-null, receives the canonical playerbots command parsed
+// from a "[do:name]" tag ("" when absent or not whitelisted); the tag is
+// removed from the text either way.
 std::string ProcessLlmResponse(const std::string& raw,
                                const std::string& botName,
-                               uint32_t* outEmoteId = nullptr);
+                               uint32_t* outEmoteId = nullptr,
+                               std::string* outIntent = nullptr);
 
 #endif // MOD_OLLAMA_CHAT_RESPONSE_H

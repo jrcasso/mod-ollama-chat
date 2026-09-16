@@ -1,5 +1,6 @@
 #include "mod-ollama-chat_dispatch.h"
 #include "mod-ollama-chat_transcript.h"
+#include "mod-ollama-chat_intent.h"
 #include "mod-ollama-chat_api.h"
 #include "mod-ollama-chat_config.h"
 #include "mod-ollama-chat_expression.h"
@@ -63,6 +64,7 @@ namespace
         OllamaChatRequest request;
         std::string       text;
         uint32_t          emoteId = 0;
+        std::string       intent;          // canonical playerbots command, or ""
         Clock::time_point deliverAt;
     };
 
@@ -109,7 +111,8 @@ namespace
         }
 
         uint32_t emoteId = 0;
-        std::string text = ProcessLlmResponse(api.text, task.request.botName, &emoteId);
+        std::string intent;
+        std::string text = ProcessLlmResponse(api.text, task.request.botName, &emoteId, &intent);
 
         // Roleplay mode rejects lines carrying out-of-world vocabulary rather
         // than mangling the sentence around the offending word.
@@ -139,6 +142,7 @@ namespace
         completion.request = task.request;
         completion.text    = std::move(text);
         completion.emoteId = emoteId;
+        completion.intent  = std::move(intent);
 
         uint32_t delayMs = 0;
         if (g_EnableTypingSimulation)
@@ -408,6 +412,16 @@ namespace
         // Body language. Safe here and only here: this is the world thread.
         ScheduleBotExpression(bot, ObjectGuid(c.request.targetGuid), c.emoteId,
                               g_BotExpressionDelayMs);
+
+        // ... and the action, if the line asked for one. After RouteMessage, so
+        // the bot has already said yes before it does the thing. Also the world
+        // thread, which is what HandleCommand requires.
+        if (!c.intent.empty())
+        {
+            Player* asker = ObjectAccessor::FindConnectedPlayer(ObjectGuid(c.request.targetGuid));
+            if (asker)
+                Intent_Execute(bot, asker, c.intent);
+        }
 
         if (c.request.recordHistory && c.request.targetGuid)
         {

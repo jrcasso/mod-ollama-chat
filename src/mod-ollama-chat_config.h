@@ -128,6 +128,10 @@ extern uint32_t    g_RoomHistoryMaxChars;
 extern std::string g_RoomHistoryHeaderTemplate;
 extern std::string g_RoomHistoryLineTemplate;
 
+// Chat intents -- see mod-ollama-chat_intent.h.
+extern bool        g_EnableChatIntents;
+extern uint32_t    g_IntentCooldownSeconds;
+
 // --------------------------------------------
 // Chatbot Snapshot Template
 // --------------------------------------------

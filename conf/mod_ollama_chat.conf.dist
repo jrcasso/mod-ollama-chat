@@ -493,6 +493,36 @@ OllamaChat.RoomHistoryHeaderTemplate = "Recent conversation here, oldest first. 
 #     Placeholders (named): {speaker} {text}
 OllamaChat.RoomHistoryLineTemplate = "{speaker}: {text}\n"
 
+# --------------------------------------------
+# CHAT INTENTS (talking a bot into doing something)
+# --------------------------------------------
+#
+# mod-playerbots already understands ~120 chat commands, but only on the exact
+# word: "invite" works, "I'm down to join a party" does not. These settings let
+# a bot act on what was actually meant.
+#
+# The model only decides WHAT WAS ASKED. Whether the bot is willing is still
+# PlayerbotSecurity's answer, and the action itself is the same command a typed
+# message would have run, so nothing new is executed and refusals are unchanged.
+# The tag rides along in the reply the bot was already generating, so this costs
+# no extra inference.
+#
+# Only a real player can trigger one; bot-to-bot chat never does.
+
+# OllamaChat.EnableChatIntents
+#     Description: Let bots act on requests made in plain language -- invite,
+#                  leave, follow, stay, give leader, trade, sell gray, repair,
+#                  roll, join lfg. Set to 0 for speech only.
+#     Default:     1 (true)
+OllamaChat.EnableChatIntents = 1
+
+# OllamaChat.IntentCooldownSeconds
+#     Description: Minimum gap before a bot will repeat the SAME action for the
+#                  same asker. Without it a model that tags three replies in a
+#                  row sends three party invites.
+#     Default:     30
+OllamaChat.IntentCooldownSeconds = 30
+
 # OllamaChat.MaxConversationHistory
 #     Description: The maximum number of recent message pairs (player + bot reply) to track per bot/player combination.
 #                  This history is stored in memory and included in the LLM prompt when the same player talks to the bot again.

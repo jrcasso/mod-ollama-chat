@@ -259,6 +259,9 @@ uint32_t    g_RoomHistoryMaxChars      = 900;
 std::string g_RoomHistoryHeaderTemplate;
 std::string g_RoomHistoryLineTemplate;
 
+bool        g_EnableChatIntents     = true;
+uint32_t    g_IntentCooldownSeconds = 30;
+
 // --------------------------------------------
 // Chatbot Snapshot Template
 // --------------------------------------------
@@ -623,6 +626,9 @@ void LoadOllamaChatConfig()
         "Recent conversation here, oldest first. Context only -- do not repeat it, and do not answer lines already answered.\n");
     g_RoomHistoryLineTemplate         = sConfigMgr->GetOption<std::string>("OllamaChat.RoomHistoryLineTemplate",
         "{speaker}: {text}\n");
+
+    g_EnableChatIntents               = sConfigMgr->GetOption<bool>("OllamaChat.EnableChatIntents", true);
+    g_IntentCooldownSeconds           = sConfigMgr->GetOption<uint32_t>("OllamaChat.IntentCooldownSeconds", 30);
 
     g_EnableChatBotSnapshotTemplate   = sConfigMgr->GetOption<bool>("OllamaChat.EnableChatBotSnapshotTemplate", false);
     g_ChatBotSnapshotTemplate         = sConfigMgr->GetOption<std::string>("OllamaChat.ChatBotSnapshotTemplate", "");
