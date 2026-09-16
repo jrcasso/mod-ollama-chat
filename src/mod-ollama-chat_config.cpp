@@ -1,4 +1,5 @@
 #include "mod-ollama-chat_config.h"
+#include "mod-ollama-chat_telemetry.h"
 #include "mod-ollama-chat_sentiment.h"
 #include "mod-ollama-chat_expression.h"
 #include "mod-ollama-chat_handler.h"
@@ -261,6 +262,9 @@ std::string g_RoomHistoryLineTemplate;
 
 bool        g_EnableChatIntents     = true;
 uint32_t    g_IntentCooldownSeconds = 30;
+
+bool        g_EnableChatTelemetry = true;
+std::string g_ChatTelemetryDir    = "/azerothcore/env/dist/logs/telemetry";
 
 // --------------------------------------------
 // Chatbot Snapshot Template
@@ -629,6 +633,9 @@ void LoadOllamaChatConfig()
 
     g_EnableChatIntents               = sConfigMgr->GetOption<bool>("OllamaChat.EnableChatIntents", true);
     g_IntentCooldownSeconds           = sConfigMgr->GetOption<uint32_t>("OllamaChat.IntentCooldownSeconds", 30);
+    g_EnableChatTelemetry             = sConfigMgr->GetOption<bool>("OllamaChat.Telemetry", true);
+    g_ChatTelemetryDir                = sConfigMgr->GetOption<std::string>("OllamaChat.TelemetryDir",
+                                            "/azerothcore/env/dist/logs/telemetry");
 
     g_EnableChatBotSnapshotTemplate   = sConfigMgr->GetOption<bool>("OllamaChat.EnableChatBotSnapshotTemplate", false);
     g_ChatBotSnapshotTemplate         = sConfigMgr->GetOption<std::string>("OllamaChat.ChatBotSnapshotTemplate", "");
@@ -1153,6 +1160,10 @@ OllamaChatConfigWorldScript::OllamaChatConfigWorldScript() : WorldScript("Ollama
 void OllamaChatConfigWorldScript::OnStartup()
 {
     LoadOllamaChatConfig();
+
+    // After the config, so the writer knows where to put the file.
+    Telemetry_Start();
+
     LoadBotPersonalityList();
     LoadBotConversationHistoryFromDB();
     InitializeSentimentTracking();
@@ -1197,6 +1208,10 @@ void OllamaChatConfigWorldScript::OnShutdown()
     // Stop accepting work and join the workers before anything they touch goes
     // away. Detached threads had no such guarantee.
     OllamaDispatch_Stop();
+
+    // After the dispatcher, so replies still in flight are recorded before the
+    // file closes.
+    Telemetry_Stop();
 
     SaveBotConversationHistoryToDB();
     Memory_SaveAll();

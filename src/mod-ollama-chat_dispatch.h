@@ -75,6 +75,8 @@ struct OllamaChatRequest
     // Post-delivery behaviour.
     bool triggerBotReplies = true;   // let other bots hear this line
     bool recordHistory     = false;  // append to conversation history
+    uint64_t telemetryTurn = 0;      // 0 = not recorded
+    int64_t  submittedAtMs = 0;      // for the reply latency
     bool updateSentiment   = false;  // run sentiment analysis on originMessage
 };
 

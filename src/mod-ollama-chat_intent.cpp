@@ -1,6 +1,7 @@
 #include "mod-ollama-chat_intent.h"
 #include "mod-ollama-chat_config.h"
 #include "mod-ollama-chat-utilities.h"
+#include "mod-ollama-chat_telemetry.h"
 
 #include "Group.h"
 #include "Player.h"
@@ -185,6 +186,8 @@ void Intent_Execute(Player* bot, Player* speaker, std::string const& command)
 
     if (OnCooldown(bot, command))
     {
+        Telemetry_NoteIntent(bot, speaker, command, false, "cooldown");
+
         if (g_DebugEnabled)
             LOG_INFO("module.ollamachat",
                      "[Ollama Chat] {} suppressed repeat intent '{}' for {}",
@@ -202,6 +205,12 @@ void Intent_Execute(Player* bot, Player* speaker, std::string const& command)
     // sources, and a whisper is the closest match to "this person asked me
     // directly", which is the only case that gets here.
     botAI->HandleCommand(CHAT_MSG_WHISPER, command, speaker);
+
+    // "executed" means handed over, not that it succeeded: HandleCommand
+    // applies its own security check and may still refuse. The bot-buddy
+    // outcome events and the bot's own refusal message cover what happened
+    // next; this records that the intent got that far.
+    Telemetry_NoteIntent(bot, speaker, command, true, nullptr);
 
     if (g_DebugEnabled)
         LOG_INFO("module.ollamachat", "[Ollama Chat] {} acting on '{}' from {}",

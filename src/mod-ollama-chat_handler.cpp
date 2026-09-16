@@ -29,6 +29,7 @@
 #include "mod-ollama-chat_handler.h"
 #include "mod-ollama-chat_transcript.h"
 #include "mod-ollama-chat_intent.h"
+#include "mod-ollama-chat_telemetry.h"
 #include "mod-ollama-chat_api.h"
 #include "mod-ollama-chat_personality.h"
 #include "mod-ollama-chat_config.h"
@@ -1779,6 +1780,14 @@ void PlayerBotChatHandler::ProcessChat(Player* player, uint32_t /*type*/, uint32
         // no lasting memory of each other at all. The room transcript gives
         // them the thread; this gives them the relationship.
         request.recordHistory     = !senderIsBot || g_RecordBotToBotHistory;
+
+        // Opens the conversation turn. Returns 0 for bot-to-bot, which is most
+        // of the traffic and none of what anyone wants to replay.
+        request.telemetryTurn = Telemetry_NoteIncoming(bot, player, trimmedMsg,
+                                                       ChatChannelSourceLocalStr[sourceLocal],
+                                                       scopeKey);
+        request.submittedAtMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                    std::chrono::system_clock::now().time_since_epoch()).count();
         request.updateSentiment   = !senderIsBot && g_EnableSentimentTracking;
 
         if (!OllamaDispatch_Submit(std::move(request)) && g_DebugEnabled)

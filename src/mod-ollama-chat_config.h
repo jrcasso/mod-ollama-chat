@@ -132,6 +132,10 @@ extern std::string g_RoomHistoryLineTemplate;
 extern bool        g_EnableChatIntents;
 extern uint32_t    g_IntentCooldownSeconds;
 
+// Conversation telemetry -- see mod-ollama-chat_telemetry.h.
+extern bool        g_EnableChatTelemetry;
+extern std::string g_ChatTelemetryDir;
+
 // --------------------------------------------
 // Chatbot Snapshot Template
 // --------------------------------------------

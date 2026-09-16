@@ -1,6 +1,7 @@
 #include "mod-ollama-chat_dispatch.h"
 #include "mod-ollama-chat_transcript.h"
 #include "mod-ollama-chat_intent.h"
+#include "mod-ollama-chat_telemetry.h"
 #include "mod-ollama-chat_api.h"
 #include "mod-ollama-chat_config.h"
 #include "mod-ollama-chat_expression.h"
@@ -382,6 +383,13 @@ namespace
                          bot->GetName(), ChatChannelSourceLocalStr[c.request.source]);
             return;
         }
+
+        Telemetry_NoteReply(c.request.telemetryTurn, c.request.botName, c.text,
+                            c.intent, c.emoteId,
+                            std::chrono::duration_cast<std::chrono::milliseconds>(
+                                std::chrono::system_clock::now().time_since_epoch()).count()
+                                - c.request.submittedAtMs,
+                            c.request.prompt.size());
 
         Governor_RecordUtterance(botGuid, c.request.scopeKey, c.text);
 

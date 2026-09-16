@@ -523,6 +523,21 @@ OllamaChat.EnableChatIntents = 1
 #     Default:     30
 OllamaChat.IntentCooldownSeconds = 30
 
+# OllamaChat.Telemetry
+#     Description: Record conversations involving a real player -- what was
+#                  said, what the bot replied, how long it took, and any action
+#                  the reply asked for. Written as JSONL next to the bot-buddy
+#                  telemetry; tools/telemetry.py merges the two by timestamp.
+#                  Bot-to-bot chatter is never recorded.
+#     Default:     1 (true)
+OllamaChat.Telemetry = 1
+
+# OllamaChat.TelemetryDir
+#     Description: Where the files go. Keep this the same as
+#                  OllamaBotControl.TelemetryDir so the two streams merge.
+#     Default:     /azerothcore/env/dist/logs/telemetry
+OllamaChat.TelemetryDir = "/azerothcore/env/dist/logs/telemetry"
+
 # OllamaChat.MaxConversationHistory
 #     Description: The maximum number of recent message pairs (player + bot reply) to track per bot/player combination.
 #                  This history is stored in memory and included in the LLM prompt when the same player talks to the bot again.
