@@ -99,6 +99,10 @@ extern std::vector<std::string> g_RandomChatterPromptVariations;
 extern std::vector<std::string> g_RandomChatterQuestionVariations;
 extern std::string g_EventChatterPromptTemplate;
 extern std::string g_ChatPromptTemplate;
+// Invariant instruction block emitted BEFORE anything bot-specific, so that the
+// backend's prompt cache can reuse it across bots. Must be byte-identical on
+// every request or the shared prefix does not match.
+extern std::string g_ChatStaticPreamble;
 extern std::string g_ChatExtraInfoTemplate;
 
 // --------------------------------------------

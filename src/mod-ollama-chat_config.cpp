@@ -232,6 +232,7 @@ std::vector<std::string> g_RandomChatterPromptVariations;
 std::vector<std::string> g_RandomChatterQuestionVariations;
 std::string g_EventChatterPromptTemplate;
 std::string g_ChatPromptTemplate;
+std::string g_ChatStaticPreamble;
 std::string g_ChatExtraInfoTemplate;
 
 // --------------------------------------------
@@ -606,6 +607,11 @@ void LoadOllamaChatConfig()
     g_EventChatterPromptTemplate     = sConfigMgr->GetOption<std::string>("OllamaChat.EventChatterPromptTemplate", "");
 
     g_ChatPromptTemplate              = sConfigMgr->GetOption<std::string>("OllamaChat.ChatPromptTemplate", "");
+    g_ChatStaticPreamble              = sConfigMgr->GetOption<std::string>("OllamaChat.StaticPreamble",
+        "You're a WoW player familiar with 3.3.5 version of the game and before. "
+        "Reply naturally in under 15 words. Use authentic WoW tone. Be blunt if provoked. "
+        "Be precise if giving directions. Never contradict your class, race, or location. "
+        "Never act like a narrator - just respond like a player. ");
     
     g_ChatExtraInfoTemplate           = sConfigMgr->GetOption<std::string>("OllamaChat.ChatExtraInfoTemplate", "");
 
